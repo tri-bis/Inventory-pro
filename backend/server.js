@@ -90,5 +90,5 @@ app.put('/api/updateProduct/:id', async (req, res) => {
 // 2. Start the Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is live on: http://localhost:${PORT}`);
+  console.log(`https://inventory-pro-tgym.onrender.com`);
 });

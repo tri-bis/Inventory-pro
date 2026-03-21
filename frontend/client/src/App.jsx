@@ -16,7 +16,7 @@ function App() {
   // 1. Fetch products from MongoDB
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/getAllProducts');
+      const res = await axios.get('https://inventory-pro-tgym.onrender.com/api/getAllProducts');
       setProducts(res.data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -37,10 +37,10 @@ function App() {
   const handleSaveProduct = async (productData) => {
     try {
       if (editProduct) {
-        const res = await axios.put(`http://localhost:5000/api/updateProduct/${editProduct._id}`, productData);
+        const res = await axios.put(`https://inventory-pro-tgym.onrender.com/api/updateProduct/${editProduct._id}`, productData);
         setProducts(products.map(p => p._id === editProduct._id ? {...res.data} : p));
       } else {
-        const res = await axios.post('http://localhost:5000/api/addNewProduct', productData);
+        const res = await axios.post('https://inventory-pro-tgym.onrender.com/api/addNewProduct', productData);
         setProducts([res.data, ...products]);
       }
       handleCloseModal();
@@ -58,7 +58,7 @@ function App() {
   const handleConfirmDelete = async () => {
     if (productToDelete) {
       try {
-        await axios.delete(`http://localhost:5000/api/deleteProduct/${productToDelete._id}`);
+        await axios.delete(`https://inventory-pro-tgym.onrender.com/api/deleteProduct/${productToDelete._id}`);
         setProducts(prev => prev.filter(item => item._id !== productToDelete._id));
         setShowDeleteModal(false);
         setProductToDelete(null);
