@@ -32,7 +32,28 @@ app.get('/api/getAllProducts', async (req, res) => {
 // CREATE: Add a new product
 app.post('/api/addNewProduct', async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const stock = parseInt(req.body.stock) || 0; // Ensure it's a number
+
+    // Logic to determine status and color
+    let status = 'IN STOCK';
+    let color = 'text-success';
+
+    if (stock === 0) {
+      status = 'OUT OF STOCK';
+      color = 'text-danger';
+    } else if (stock < 10) {
+      status = 'LOW STOCK';
+      color = 'text-warning';
+    }
+
+    // Create the product object with the calculated fields
+    const product = new Product({
+      ...req.body,
+      stock,
+      status,
+      color
+    });
+
     const newProduct = await product.save();
     res.status(201).json(newProduct);
   } catch (err) {
