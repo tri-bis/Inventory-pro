@@ -99,7 +99,7 @@ const categoryColors = {
   'Server Components': 'bg-light text-purple', 
   'Networking Gear': 'bg-primary text-primary',
   'Peripheral Devices': 'bg-warning text-warning',
-  'Mobiles': 'bg-success text-success'
+  'Mobile Technology': 'bg-success text-success'
 };
   return (
     <div className="d-flex">
