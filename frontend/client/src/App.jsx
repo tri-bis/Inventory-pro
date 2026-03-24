@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form } from 'react-bootstrap';
 import { LayoutDashboard, Package, Store, Search, Plus, Bell, Trash2, Edit, MapPin, PlusCircle } from 'lucide-react'; 
 import AddProductModal from './components/AddProductModal'; 
-import AddWarehouseModal from './components/AddWarehouseModal'; // NEW COMPONENT
+import AddWarehouseModal from './components/AddWarehouseModal'; 
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import axios from 'axios';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
-  const [showWarehouseModal, setShowWarehouseModal] = useState(false); // NEW STATE
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]); 
@@ -18,7 +18,6 @@ function App() {
 
   const API_URL = 'https://inventory-pro-tgym.onrender.com/api';
 
-  // 1. Fetch products
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`${API_URL}/getAllProducts`);
@@ -28,7 +27,6 @@ function App() {
     }
   };
 
-  // 2. Fetch warehouses
   const fetchWarehouses = async () => {
     try {
       const res = await axios.get(`${API_URL}/warehouses/all`);
@@ -43,7 +41,6 @@ function App() {
     fetchWarehouses();
   }, []);
 
-  // 3. Save Product
   const handleSaveProduct = async (productData) => {
     try {
       if (editProduct) {
@@ -58,18 +55,16 @@ function App() {
     }
   };
 
-  // 4. Save Warehouse (NEW LOGIC)
   const handleSaveWarehouse = async (warehouseData) => {
     try {
       await axios.post(`${API_URL}/warehouses/add`, warehouseData);
-      fetchWarehouses(); // Refresh dropdown list
+      fetchWarehouses(); 
       setShowWarehouseModal(false);
     } catch (error) {
       console.error("Error adding warehouse:", error);
     }
   };
 
-  // 5. Delete Logic
   const handleDeleteClick = (product) => {
     setProductToDelete(product);
     setShowDeleteModal(true);
@@ -93,9 +88,11 @@ function App() {
     setEditProduct(null); 
   };
 
-  // Calculations
+  // Fixed Calculation for Total Value
   const totalValue = products.reduce((acc, item) => {
-    const price = parseFloat(item.price?.toString().replace(/[^0-9.]/g, '')) || 0;
+    const rawPrice = item.price || "0";
+    const cleanPrice = String(rawPrice).replace(/[^0-9.]/g, '');
+    const price = parseFloat(cleanPrice) || 0;
     const stock = parseInt(item.stock, 10) || 0;
     return acc + (price * stock);
   }, 0);
@@ -106,7 +103,7 @@ function App() {
   }).length;
 
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.vendor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.warehouse?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -120,45 +117,56 @@ function App() {
   };
 
   return (
-    <div className="d-flex">
+    <div className="d-flex bg-dark text-white" style={{ minHeight: '100vh' }}>
       {/* Sidebar */}
-      <div className="sidebar p-4 d-flex flex-column">
+      <div className="sidebar p-4 d-flex flex-column border-end border-white border-opacity-10" style={{ width: '250px' }}>
         <div className="d-flex align-items-center gap-2 mb-5">
           <div className="bg-primary p-2 rounded-3"><Package color="white" /></div>
-          <span className="fw-bold fs-5 text-white">Inventory Pro</span>
+          <span className="fw-bold fs-5">Inventory Pro</span>
         </div>
         <div className="d-flex flex-column gap-3 flex-grow-1">
-          <div className="text-secondary d-flex align-items-center gap-3 p-2 cursor-pointer hover-effect">
+          <div className="text-secondary d-flex align-items-center gap-3 p-2 cursor-pointer">
             <LayoutDashboard size={20}/> Dashboard
           </div>
           <div className="text-primary d-flex align-items-center gap-3 p-2 bg-primary bg-opacity-10 rounded-3">
             <Package size={20}/> Inventory
           </div>
-          <div className="text-secondary d-flex align-items-center gap-3 p-2 cursor-pointer hover-effect">
+          <div className="text-secondary d-flex align-items-center gap-3 p-2 cursor-pointer">
             <Store size={20}/> Profile
           </div>
         </div>
       </div>
 
       <div className="flex-grow-1 overflow-auto vh-100">
-        <header className="p-4 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10">
+        <header className="p-4 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top bg-dark" style={{ zIndex: 1020 }}>
           <div className="position-relative w-50">
             <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" size={18} />
             <Form.Control 
                 type="text" 
-                placeholder="Search products..." 
+                placeholder="Search products, vendors, or warehouses..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-dark border-0 text-white ps-5 py-2 rounded-3 search-input" 
-                style={{backgroundColor: '#1a1438'}} 
+                className="bg-dark border-0 text-white ps-5 py-2 rounded-3" 
+                style={{backgroundColor: '#1a1438', outline: 'none', boxShadow: 'none'}} 
             />
           </div>
-          <div className="d-flex gap-2 align-items-center">
-            {/* NEW WAREHOUSE BUTTON */}
-            <Button variant="outline-primary" onClick={() => setShowWarehouseModal(true)} className="rounded-3 px-3 d-flex align-items-center gap-2">
-              <PlusCircle size={18} /> New Warehouse
+          <div className="d-flex gap-3 align-items-center">
+            <Bell className="text-white cursor-pointer" />
+            
+            {/* WAREHOUSE BUTTON - Styled to be visible */}
+            <Button 
+              variant="outline-info" 
+              onClick={() => setShowWarehouseModal(true)} 
+              className="rounded-3 px-3 d-flex align-items-center gap-2 border-info"
+            >
+              <PlusCircle size={18} /> Warehouse
             </Button>
-            <Button variant="warning" onClick={() => setShowModal(true)} className="rounded-3 px-4 d-flex align-items-center gap-2">
+
+            <Button 
+              variant="warning" 
+              onClick={() => setShowModal(true)} 
+              className="rounded-3 px-4 d-flex align-items-center gap-2 fw-bold"
+            >
               <Plus size={18} /> Add Product
             </Button>
           </div>
@@ -166,14 +174,29 @@ function App() {
 
         <Container fluid className="p-4">
           <Row className="mb-4">
-            <Col md={4}><Card className="inventory-card p-3 shadow-sm text-white">Total Products: {products.length}</Card></Col>
-            <Col md={4}><Card className="inventory-card p-3 shadow-sm text-white">Value: ₹{totalValue.toLocaleString()}</Card></Col>
-            <Col md={4}><Card className="inventory-card p-3 shadow-sm text-white">Low Stock: {lowStockCount}</Card></Col>
+            <Col md={4}>
+                <Card className="inventory-card p-3 shadow-sm text-center">
+                    <div className="text-secondary small mb-1">Total Products</div>
+                    <div className="fs-3 fw-bold">{products.length}</div>
+                </Card>
+            </Col>
+            <Col md={4}>
+                <Card className="inventory-card p-3 shadow-sm text-center">
+                    <div className="text-secondary small mb-1">Total Inventory Value</div>
+                    <div className="fs-3 fw-bold text-success">₹{totalValue.toLocaleString('en-IN')}</div>
+                </Card>
+            </Col>
+            <Col md={4}>
+                <Card className="inventory-card p-3 shadow-sm text-center">
+                    <div className="text-secondary small mb-1">Low Stock Items</div>
+                    <div className={`fs-3 fw-bold ${lowStockCount > 0 ? 'text-warning' : 'text-white'}`}>{lowStockCount}</div>
+                </Card>
+            </Col>
           </Row>
 
-          <Card className="inventory-card border-0 shadow-sm">
-            <Table responsive className="text-white table-custom">
-              <thead>
+          <Card className="inventory-card border-0 shadow-sm overflow-hidden">
+            <Table responsive className="text-white table-custom mb-0">
+              <thead className="bg-primary bg-opacity-10">
                 <tr>
                   <th>Product Name</th>
                   <th>Warehouse</th> 
@@ -187,13 +210,15 @@ function App() {
               <tbody>
                 {filteredProducts.map((item) => (
                   <tr key={item._id} className="align-middle custom-table-row">
-                    <td className="fw-bold text-white">{item.name}</td>
+                    <td className="fw-bold">{item.name}</td>
                     <td className="text-info">
-                      <MapPin size={14} className="me-1"/> {item.warehouse?.name || 'Unassigned'}
+                      <div className="d-flex align-items-center gap-1">
+                        <MapPin size={14} /> {item.warehouse?.name || 'Unassigned'}
+                      </div>
                     </td>
                     <td className="text-secondary">{item.vendor}</td>
-                    <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary'}`}>{item.cat}</span></td>
-                    <td className="text-white fw-medium">{item.price}</td>
+                    <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>{item.cat}</span></td>
+                    <td className="fw-medium">₹{String(item.price).replace('₹', '')}</td>
                     <td><div className={item.color}>● {item.status}</div></td>
                     <td className="text-end">
                       <Button variant="link" className="text-info p-0 me-3" onClick={() => { setEditProduct(item); setShowModal(true); }}><Edit size={18} /></Button>
@@ -215,7 +240,6 @@ function App() {
         warehouses={warehouses}
       />
 
-      {/* NEW WAREHOUSE MODAL COMPONENT */}
       <AddWarehouseModal 
         show={showWarehouseModal}
         handleClose={() => setShowWarehouseModal(false)}
