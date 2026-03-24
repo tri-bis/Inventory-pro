@@ -9,6 +9,7 @@ const DeleteConfirmModal = ({ show, handleClose, onConfirm, productName }) => {
       onHide={handleClose} 
       centered 
       contentClassName="inventory-card border-danger text-white"
+      style={{ '--bs-modal-bg': "#161925" }}
     >
       <Modal.Body className="p-4 text-center">
         <div className="mb-3 text-danger">

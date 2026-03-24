@@ -138,40 +138,51 @@ function App() {
       </div>
 
       <div className="flex-grow-1 d-flex flex-column vh-100" style={{ minWidth: 0 }}>
-        {/* REFINED HEADER LAYOUT */}
-        <header className="p-3 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top bg-dark" style={{ zIndex: 1020 }}>
-          <div className="position-relative" style={{ width: '40%' }}>
-            <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" size={18} />
-            <Form.Control 
-                type="text" 
-                placeholder="Search products..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-dark border-0 text-white ps-5 py-2 rounded-3" 
-                style={{backgroundColor: '#1a1438', outline: 'none', boxShadow: 'none'}} 
-            />
-          </div>
-          
-          <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'max-content' }}>
-            <Bell className="text-white cursor-pointer me-2" size={20} />
-            
-            <Button 
-              variant="outline-info" 
-              onClick={() => setShowWarehouseModal(true)} 
-              className="rounded-3 px-3 d-flex align-items-center gap-2 border-info text-nowrap"
-            >
-              <PlusCircle size={18} /> Warehouse
-            </Button>
+  
+        <header 
+  className="p-3 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top" 
+  style={{ 
+    zIndex: 1020, 
+    backgroundColor: '#0f0a1e' // Matches your main background
+  }}
+>
+  <div className="position-relative" style={{ width: '40%' }}>
+    <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" size={18} />
+    <Form.Control 
+        type="text" 
+        placeholder="Search products..." 
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="border-0 text-white ps-5 py-2 rounded-3" 
+        style={{
+          backgroundColor: '#222634', // Greyish-blue shade to make it visible
+          outline: 'none', 
+          boxShadow: 'none',
+          color: '#ffffff'
+        }} 
+    />
+  </div>
+  
+  <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'max-content' }}>
+    <Bell className="text-white cursor-pointer me-2" size={20} />
+    
+    <Button 
+      variant="outline-info" 
+      onClick={() => setShowWarehouseModal(true)} 
+      className="rounded-3 px-3 d-flex align-items-center gap-2 border-info text-nowrap"
+    >
+      <PlusCircle size={18} /> Warehouse
+    </Button>
 
-            <Button 
-              variant="warning" 
-              onClick={() => setShowModal(true)} 
-              className="rounded-3 px-4 d-flex align-items-center gap-2 fw-bold text-nowrap"
-            >
-              <Plus size={18} /> Add Product
-            </Button>
-          </div>
-        </header>
+    <Button 
+      variant="warning" 
+      onClick={() => setShowModal(true)} 
+      className="rounded-3 px-4 d-flex align-items-center gap-2 fw-bold text-nowrap"
+    >
+      <Plus size={18} /> Add Product
+    </Button>
+  </div>
+</header>
 
         <Container fluid className="p-4">
           <Row className="mb-4">
