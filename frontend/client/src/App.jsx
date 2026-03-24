@@ -9,13 +9,14 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [products, setProducts] = useState([]);
+  const [warehouses, setWarehouses] = useState([]); // NEW: State for warehouses
   const [searchTerm, setSearchTerm] = useState(""); 
   const [editProduct, setEditProduct] = useState(null); 
   const [productToDelete, setProductToDelete] = useState(null);
 
   const API_URL = 'https://inventory-pro-tgym.onrender.com/api';
 
-  // 1. Fetch products (Now includes populated warehouse data)
+  // 1. Fetch products
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`${API_URL}/getAllProducts`);
@@ -25,11 +26,22 @@ function App() {
     }
   };
 
+  // 2. NEW: Fetch warehouses for the Modal dropdown
+  const fetchWarehouses = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/warehouses/all`);
+      setWarehouses(res.data);
+    } catch (error) {
+      console.error("Error fetching warehouses:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchWarehouses(); // Load warehouses on mount
   }, []);
 
-  // 2. Add or Update Logic
+  // 3. Add or Update Logic
   const handleSaveProduct = async (productData) => {
     try {
       if (editProduct) {
@@ -37,14 +49,14 @@ function App() {
       } else {
         await axios.post(`${API_URL}/addNewProduct`, productData);
       }
-      fetchProducts(); // Refresh list to get populated warehouse object
+      fetchProducts(); 
       handleCloseModal();
     } catch (error) {
       console.error("Operation failed:", error);
     }
   };
 
-  // 3. Delete Logic
+  // 4. Delete Logic
   const handleDeleteClick = (product) => {
     setProductToDelete(product);
     setShowDeleteModal(true);
@@ -68,7 +80,7 @@ function App() {
     setEditProduct(null); 
   };
 
-  // --- 4. DYNAMIC CALCULATIONS ---
+  // --- 5. DYNAMIC CALCULATIONS ---
   const totalValue = products.reduce((acc, item) => {
     const price = parseFloat(item.price) || 0;
     const stock = parseInt(item.stock, 10) || 0;
@@ -80,7 +92,7 @@ function App() {
     return !isNaN(s) && s > 0 && s < 10;
   }).length;
 
-  // 5. Live Search Filter (Updated to search by Warehouse Name too)
+  // 6. Live Search Filter
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.vendor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,7 +189,7 @@ function App() {
               <thead>
                 <tr>
                   <th>Product Name</th>
-                  <th>Warehouse</th> {/* Updated Column */}
+                  <th>Warehouse</th> 
                   <th>Vendor</th>
                   <th>Category</th>
                   <th>Price</th>
@@ -189,7 +201,6 @@ function App() {
                 {filteredProducts.map((item) => (
                   <tr key={item._id} className="align-middle custom-table-row">
                     <td className="fw-bold text-white">{item.name}</td>
-                    {/* Accessing populated object property */}
                     <td className="text-info">
                       <div className="d-flex align-items-center gap-1">
                         <MapPin size={14} /> {item.warehouse?.name || 'Unassigned'}
@@ -223,7 +234,8 @@ function App() {
         show={showModal} 
         handleClose={handleCloseModal} 
         onAdd={handleSaveProduct} 
-        editProduct={editProduct} 
+        editProduct={editProduct}
+        warehouses={warehouses} // PASS WAREHOUSES TO MODAL
       />
 
       <DeleteConfirmModal 

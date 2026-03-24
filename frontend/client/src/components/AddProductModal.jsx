@@ -1,33 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 
-const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
+const AddProductModal = ({ show, handleClose, onAdd, editProduct, warehouses }) => {
   const [formData, setFormData] = useState({
     name: '',
     vendor: '',
     sku: '',
-    cat: '',
+    cat: 'Laptops',
     price: '',
     stock: '',
+    warehouse: '', // NEW: To store the selected Warehouse ID
     status: 'IN STOCK',
     color: 'text-success'
   });
 
-  // Pre-defined categories
   const categories = ['Laptops', 'Networking Gear', 'Peripheral Devices', 'Mobile Technology', 'Server Components'];
 
   useEffect(() => {
     if (editProduct) {
       const numericPrice = editProduct.price?.toString().replace(/[^0-9.]/g, '');
-      setFormData({ ...editProduct, price: numericPrice });
+      setFormData({ 
+        ...editProduct, 
+        price: numericPrice,
+        // If editing, extract just the ID from the populated warehouse object
+        warehouse: editProduct.warehouse?._id || editProduct.warehouse || ''
+      });
     } else {
       setFormData({
         name: '',
         vendor: '',
         sku: '',
-        cat: '',
+        cat: 'Laptops',
         price: '',
         stock: '',
+        warehouse: '',
         status: 'IN STOCK',
         color: 'text-success'
       });
@@ -36,6 +42,13 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validation: Ensure a warehouse is selected
+    if (!formData.warehouse) {
+      alert("Please select a warehouse");
+      return;
+    }
+
     const stockNum = parseInt(formData.stock) || 0;
     
     const finalData = {
@@ -43,11 +56,11 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
       stock: stockNum,
       status: stockNum === 0 ? 'OUT OF STOCK' : stockNum < 10 ? 'LOW STOCK' : 'IN STOCK',
       color: stockNum === 0 ? 'text-danger' : stockNum < 10 ? 'text-warning' : 'text-success',
+      // Ensure price is stored as a string with the currency symbol
       price: formData.price.toString().startsWith('₹') ? formData.price : `₹${formData.price}`
     };
     
     onAdd(finalData);
-    handleClose();
   };
 
   return (
@@ -65,6 +78,23 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
               onChange={(e) => setFormData({...formData, name: e.target.value})}
               required 
             />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="text-secondary small">Assign Warehouse</Form.Label>
+            <Form.Select 
+              className="bg-dark border-secondary text-white"
+              value={formData.warehouse}
+              onChange={(e) => setFormData({...formData, warehouse: e.target.value})}
+              required
+            >
+              <option value="">-- Choose a Warehouse --</option>
+              {warehouses && warehouses.map(w => (
+                <option key={w._id} value={w._id}>
+                  {w.name} ({w.location})
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
 
           <Row>
@@ -87,6 +117,7 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
                   className="bg-dark border-secondary text-white" 
                   value={formData.sku}
                   onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -98,6 +129,7 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
               className="bg-dark border-secondary text-white" 
               value={formData.vendor}
               onChange={(e) => setFormData({...formData, vendor: e.target.value})}
+              required
             />
           </Form.Group>
 
@@ -107,10 +139,10 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
                 <Form.Label className="text-secondary small">Price (INR)</Form.Label>
                 <Form.Control 
                   type="text" 
-                  step="0.01"
                   className="bg-dark border-secondary text-white" 
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -118,10 +150,11 @@ const AddProductModal = ({ show, handleClose, onAdd, editProduct }) => {
               <Form.Group className="mb-3">
                 <Form.Label className="text-secondary small">Stock Quantity</Form.Label>
                 <Form.Control 
-                  type="text" 
+                  type="number" 
                   className="bg-dark border-secondary text-white" 
                   value={formData.stock}
                   onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                  required
                 />
               </Form.Group>
             </Col>
