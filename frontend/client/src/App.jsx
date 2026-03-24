@@ -88,10 +88,11 @@ function App() {
     setEditProduct(null); 
   };
 
-  // Fixed Calculation for Total Value
+  // FIX: Robust calculation for Total Value
   const totalValue = products.reduce((acc, item) => {
+    // Strips everything except numbers and decimals (removes ₹ and commas)
     const rawPrice = item.price || "0";
-    const cleanPrice = String(rawPrice).replace(/[^0-9.]/g, '');
+    const cleanPrice = String(rawPrice).replace(/[^\d.]/g, ''); 
     const price = parseFloat(cleanPrice) || 0;
     const stock = parseInt(item.stock, 10) || 0;
     return acc + (price * stock);
@@ -118,8 +119,7 @@ function App() {
 
   return (
     <div className="d-flex bg-dark text-white" style={{ minHeight: '100vh' }}>
-      {/* Sidebar */}
-      <div className="sidebar p-4 d-flex flex-column border-end border-white border-opacity-10" style={{ width: '250px' }}>
+      <div className="sidebar p-4 d-flex flex-column border-end border-white border-opacity-10" style={{ width: '250px', flexShrink: 0 }}>
         <div className="d-flex align-items-center gap-2 mb-5">
           <div className="bg-primary p-2 rounded-3"><Package color="white" /></div>
           <span className="fw-bold fs-5">Inventory Pro</span>
@@ -137,27 +137,29 @@ function App() {
         </div>
       </div>
 
-      <div className="flex-grow-1 overflow-auto vh-100">
-        <header className="p-4 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top bg-dark" style={{ zIndex: 1020 }}>
-          <div className="position-relative w-50">
+      <div className="flex-grow-1 d-flex flex-column vh-100" style={{ minWidth: 0 }}>
+        {/* REFINED HEADER LAYOUT */}
+        <header className="p-3 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top bg-dark" style={{ zIndex: 1020 }}>
+          <div className="position-relative" style={{ width: '40%' }}>
             <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" size={18} />
             <Form.Control 
                 type="text" 
-                placeholder="Search products, vendors, or warehouses..." 
+                placeholder="Search products..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-dark border-0 text-white ps-5 py-2 rounded-3" 
                 style={{backgroundColor: '#1a1438', outline: 'none', boxShadow: 'none'}} 
             />
           </div>
-          <div className="d-flex gap-3 align-items-center">
-            <Bell className="text-white cursor-pointer" />
+          
+          <div className="d-flex gap-2 align-items-center flex-nowrap">
+            <Bell className="text-white cursor-pointer me-2" size={20} />
             
-            {/* WAREHOUSE BUTTON - Styled to be visible */}
+            {/* WAREHOUSE BUTTON - Added variant and text-nowrap */}
             <Button 
               variant="outline-info" 
               onClick={() => setShowWarehouseModal(true)} 
-              className="rounded-3 px-3 d-flex align-items-center gap-2 border-info"
+              className="rounded-3 px-3 d-flex align-items-center gap-2 border-info text-nowrap"
             >
               <PlusCircle size={18} /> Warehouse
             </Button>
@@ -165,7 +167,7 @@ function App() {
             <Button 
               variant="warning" 
               onClick={() => setShowModal(true)} 
-              className="rounded-3 px-4 d-flex align-items-center gap-2 fw-bold"
+              className="rounded-3 px-4 d-flex align-items-center gap-2 fw-bold text-nowrap"
             >
               <Plus size={18} /> Add Product
             </Button>
@@ -183,7 +185,9 @@ function App() {
             <Col md={4}>
                 <Card className="inventory-card p-3 shadow-sm text-center">
                     <div className="text-secondary small mb-1">Total Inventory Value</div>
-                    <div className="fs-3 fw-bold text-success">₹{totalValue.toLocaleString('en-IN')}</div>
+                    <div className="fs-3 fw-bold text-success">
+                        ₹{totalValue.toLocaleString('en-IN')}
+                    </div>
                 </Card>
             </Col>
             <Col md={4}>
@@ -218,7 +222,7 @@ function App() {
                     </td>
                     <td className="text-secondary">{item.vendor}</td>
                     <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>{item.cat}</span></td>
-                    <td className="fw-medium">₹{String(item.price).replace('₹', '')}</td>
+                    <td className="fw-medium">{item.price}</td>
                     <td><div className={item.color}>● {item.status}</div></td>
                     <td className="text-end">
                       <Button variant="link" className="text-info p-0 me-3" onClick={() => { setEditProduct(item); setShowModal(true); }}><Edit size={18} /></Button>
