@@ -6,8 +6,7 @@ const warehouseSchema = new mongoose.Schema({
     required: [true, 'Warehouse name is required'],
     unique: true 
   },
-  location: { type: String, default: 'Jamshedpur' },
-  manager: { type: String, default: 'Trisha' }
+  location: { type: String, default: 'Jamshedpur' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Warehouse', warehouseSchema);
