@@ -184,7 +184,7 @@ function App() {
             <Col md={4}>
                 <Card className="inventory-card p-3 shadow-sm text-center">
                     <div className="text-secondary small mb-1">Total Inventory Value</div>
-                    <div className="fs-3 fw-bold text-success">
+                    <div className="fs-3 fw-bold text-white">
                         ₹{totalValue.toLocaleString('en-IN')}
                     </div>
                 </Card>
@@ -213,7 +213,7 @@ function App() {
               <tbody>
                 {filteredProducts.map((item) => (
                   <tr key={item._id} className="align-middle custom-table-row">
-                    <td className="fw-bold">{item.name}</td>
+                    <td className="fw-bold text-white">{item.name}</td>
                     <td className="text-info">
                       <div className="d-flex align-items-center gap-1">
                         <MapPin size={14} /> {item.warehouse?.name || 'Unassigned'}
@@ -221,7 +221,7 @@ function App() {
                     </td>
                     <td className="text-secondary">{item.vendor}</td>
                     <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>{item.cat}</span></td>
-                    <td className="fw-medium">₹{String(item.price).replace('₹', '')}</td>
+                    <td className="fw-medium text-white">₹{String(item.price).replace('₹', '')}</td>
                     <td><div className={item.color}>● {item.status}</div></td>
                     <td className="text-end">
                       <Button variant="link" className="text-info p-0 me-3" onClick={() => { setEditProduct(item); setShowModal(true); }}><Edit size={18} /></Button>
