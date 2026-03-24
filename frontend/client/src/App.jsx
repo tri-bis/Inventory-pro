@@ -93,7 +93,7 @@ function App() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.vendor.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  {/* Define the mapping before the return or inside the map */}
+  {/* Define the mapping before the return or inside the map*/}
 const categoryColors = {
   'Laptops': 'bg-info text-info',
   'Server Components': 'bg-light text-purple', 
