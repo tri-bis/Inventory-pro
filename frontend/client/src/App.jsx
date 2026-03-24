@@ -88,9 +88,8 @@ function App() {
     setEditProduct(null); 
   };
 
-  // FIX: Robust calculation for Total Value
+  // FIX: Strips symbols like ₹ and commas so the math works
   const totalValue = products.reduce((acc, item) => {
-    // Strips everything except numbers and decimals (removes ₹ and commas)
     const rawPrice = item.price || "0";
     const cleanPrice = String(rawPrice).replace(/[^\d.]/g, ''); 
     const price = parseFloat(cleanPrice) || 0;
@@ -119,6 +118,7 @@ function App() {
 
   return (
     <div className="d-flex bg-dark text-white" style={{ minHeight: '100vh' }}>
+      {/* Sidebar */}
       <div className="sidebar p-4 d-flex flex-column border-end border-white border-opacity-10" style={{ width: '250px', flexShrink: 0 }}>
         <div className="d-flex align-items-center gap-2 mb-5">
           <div className="bg-primary p-2 rounded-3"><Package color="white" /></div>
@@ -152,10 +152,9 @@ function App() {
             />
           </div>
           
-          <div className="d-flex gap-2 align-items-center flex-nowrap">
+          <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'max-content' }}>
             <Bell className="text-white cursor-pointer me-2" size={20} />
             
-            {/* WAREHOUSE BUTTON - Added variant and text-nowrap */}
             <Button 
               variant="outline-info" 
               onClick={() => setShowWarehouseModal(true)} 
@@ -222,7 +221,7 @@ function App() {
                     </td>
                     <td className="text-secondary">{item.vendor}</td>
                     <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>{item.cat}</span></td>
-                    <td className="fw-medium">{item.price}</td>
+                    <td className="fw-medium">₹{String(item.price).replace('₹', '')}</td>
                     <td><div className={item.color}>● {item.status}</div></td>
                     <td className="text-end">
                       <Button variant="link" className="text-info p-0 me-3" onClick={() => { setEditProduct(item); setShowModal(true); }}><Edit size={18} /></Button>
