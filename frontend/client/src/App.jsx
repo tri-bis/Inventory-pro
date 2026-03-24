@@ -117,7 +117,7 @@ function App() {
   };
 
   return (
-    <div className="d-flex bg-dark text-white" style={{ minHeight: '100vh' }}>
+    <div className="d-flex text-white" style={{ minHeight: '100vh', backgroundColor: '#0f0a1e'}}>
       {/* Sidebar */}
       <div className="sidebar p-4 d-flex flex-column border-end border-white border-opacity-10" style={{ width: '250px', flexShrink: 0 }}>
         <div className="d-flex align-items-center gap-2 mb-5">
