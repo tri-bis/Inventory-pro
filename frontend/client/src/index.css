@@ -73,10 +73,8 @@ body {
 
 /* Make the placeholder text visible */
 .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important; 
-    opacity: 1; 
+    color: #cbd5e0 !important;
 }
-
 
 .search-input:focus {
     background-color: #241b4f !important;

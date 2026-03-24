@@ -143,7 +143,7 @@ function App() {
   className="p-3 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10 sticky-top" 
   style={{ 
     zIndex: 1020, 
-    backgroundColor: '#0f0a1e' // Matches your main background
+    backgroundColor: '#0f0a1e' 
   }}
 >
   <div className="position-relative" style={{ width: '40%' }}>
