@@ -1,19 +1,23 @@
 const Product = require('../models/Product');
 
-// READ: Get all products
+// READ: Get all products with Warehouse details
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    
+    const products = await Product.find()
+      .populate('warehouse', 'name location manager') 
+      .sort({ createdAt: -1 });
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// CREATE: Add a new product
+// CREATE: Add a new product linked to a Warehouse
 exports.addNewProduct = async (req, res) => {
   try {
     const stock = parseInt(req.body.stock) || 0;
+    
     let status = 'IN STOCK';
     let color = 'text-success';
 
@@ -25,6 +29,7 @@ exports.addNewProduct = async (req, res) => {
       color = 'text-warning';
     }
 
+    
     const product = new Product({
       ...req.body,
       stock,
@@ -33,7 +38,10 @@ exports.addNewProduct = async (req, res) => {
     });
 
     const newProduct = await product.save();
-    res.status(201).json(newProduct);
+   
+    const populatedProduct = await Product.findById(newProduct._id).populate('warehouse', 'name');
+    
+    res.status(201).json(populatedProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -58,7 +66,11 @@ exports.updateProduct = async (req, res) => {
       req.params.id,
       { ...req.body, stock, status, color },
       { new: true }
-    );
+    ).populate('warehouse', 'name'); 
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.json(updatedProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });

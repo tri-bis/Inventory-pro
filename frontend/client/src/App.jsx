@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form } from 'react-bootstrap';
-import { LayoutDashboard, Package, Store, Search, Plus, Bell, Trash2, Edit } from 'lucide-react'; 
+import { LayoutDashboard, Package, Store, Search, Plus, Bell, Trash2, Edit, MapPin } from 'lucide-react'; 
 import AddProductModal from './components/AddProductModal'; 
-import DeleteConfirmModal from './components/DeleteConfirmModal'; // New Import
+import DeleteConfirmModal from './components/DeleteConfirmModal';
 import axios from 'axios';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); 
   const [editProduct, setEditProduct] = useState(null); 
-  const [productToDelete, setProductToDelete] = useState(null); // Track item to delete
+  const [productToDelete, setProductToDelete] = useState(null);
 
-  // 1. Fetch products from MongoDB
+  const API_URL = 'https://inventory-pro-tgym.onrender.com/api';
+
+  // 1. Fetch products (Now includes populated warehouse data)
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('https://inventory-pro-tgym.onrender.com/api/getAllProducts');
+      const res = await axios.get(`${API_URL}/getAllProducts`);
       setProducts(res.data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -24,32 +26,25 @@ function App() {
   };
 
   useEffect(() => {
-  fetchProducts();
-
-  const interval = setInterval(() => {
     fetchProducts();
-  }, 3000); // every 3 sec
-
-  return () => clearInterval(interval);
-}, []);
+  }, []);
 
   // 2. Add or Update Logic
   const handleSaveProduct = async (productData) => {
     try {
       if (editProduct) {
-        const res = await axios.put(`https://inventory-pro-tgym.onrender.com/api/updateProduct/${editProduct._id}`, productData);
-        setProducts(products.map(p => p._id === editProduct._id ? {...res.data} : p));
+        await axios.put(`${API_URL}/updateProduct/${editProduct._id}`, productData);
       } else {
-        const res = await axios.post('https://inventory-pro-tgym.onrender.com/api/addNewProduct', productData);
-        setProducts([res.data, ...products]);
+        await axios.post(`${API_URL}/addNewProduct`, productData);
       }
+      fetchProducts(); // Refresh list to get populated warehouse object
       handleCloseModal();
     } catch (error) {
       console.error("Operation failed:", error);
     }
   };
 
-  // 3. Delete Logic (New Handlers)
+  // 3. Delete Logic
   const handleDeleteClick = (product) => {
     setProductToDelete(product);
     setShowDeleteModal(true);
@@ -58,7 +53,7 @@ function App() {
   const handleConfirmDelete = async () => {
     if (productToDelete) {
       try {
-        await axios.delete(`https://inventory-pro-tgym.onrender.com/api/deleteProduct/${productToDelete._id}`);
+        await axios.delete(`${API_URL}/deleteProduct/${productToDelete._id}`);
         setProducts(prev => prev.filter(item => item._id !== productToDelete._id));
         setShowDeleteModal(false);
         setProductToDelete(null);
@@ -75,32 +70,31 @@ function App() {
 
   // --- 4. DYNAMIC CALCULATIONS ---
   const totalValue = products.reduce((acc, item) => {
-    const rawPrice = item.price || item.Price || "0";
-    const cleanPrice = String(rawPrice).replace(/[^0-9.]/g, '');
-    const price = parseFloat(cleanPrice) || 0;
-    const rawStock = item.stock || item.Stock || 0;
-    const stock = parseInt(rawStock, 10) || 0;
+    const price = parseFloat(item.price) || 0;
+    const stock = parseInt(item.stock, 10) || 0;
     return acc + (price * stock);
   }, 0);
 
   const lowStockCount = products.filter(p => {
-    const s = parseInt(p.stock || p.Stock, 10);
+    const s = parseInt(p.stock, 10);
     return !isNaN(s) && s > 0 && s < 10;
   }).length;
 
-  // 5. Live Search Filter
+  // 5. Live Search Filter (Updated to search by Warehouse Name too)
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+    product.vendor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.warehouse?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  {/* Define the mapping before the return or inside the map*/}
-const categoryColors = {
-  'Laptops': 'bg-info text-info',
-  'Server Components': 'bg-light text-purple', 
-  'Networking Gear': 'bg-primary text-primary',
-  'Peripheral Devices': 'bg-warning text-warning',
-  'Mobile Technology': 'bg-success text-success'
-};
+
+  const categoryColors = {
+    'Laptops': 'bg-info text-info',
+    'Server Components': 'bg-light text-purple', 
+    'Networking Gear': 'bg-primary text-primary',
+    'Peripheral Devices': 'bg-warning text-warning',
+    'Mobile Technology': 'bg-success text-success'
+  };
+
   return (
     <div className="d-flex">
       {/* Sidebar */}
@@ -126,18 +120,18 @@ const categoryColors = {
       <div className="flex-grow-1 overflow-auto vh-100">
         <header className="p-4 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10">
           <div className="position-relative w-50">
-            <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" placeholder="Search by name or vendor..." size={18} />
+            <Search className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" size={18} />
             <Form.Control 
                 type="text" 
-                placeholder="Search by name or vendor..." 
+                placeholder="Search by name, vendor, or warehouse..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-dark border-0 text-white ps-5 py-2 rounded-3 search-input" 
-                style={{backgroundColor: '#1a1438', border: 'none'}} 
+                style={{backgroundColor: '#1a1438'}} 
             />
           </div>
           <div className="d-flex gap-3 align-items-center">
-            <Bell className="text- cursor-pointer" />
+            <Bell className="text-white cursor-pointer" />
             <Button variant="warning" onClick={() => setShowModal(true)} className="rounded-3 px-4 d-flex align-items-center gap-2">
               <Plus size={18} /> Add Product
             </Button>
@@ -147,25 +141,25 @@ const categoryColors = {
         <Container fluid className="p-4">
           <Row className="mb-4">
             <Col md={4}>
-              <Card className="inventory-card p-3">
+              <Card className="inventory-card p-3 shadow-sm">
                 <div className="text-secondary small mb-2">Total Products</div>
                 <div className="fs-3 fw-bold text-white">{products.length}</div>
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="inventory-card p-3">
+              <Card className="inventory-card p-3 shadow-sm">
                 <div className="text-secondary small mb-2">Total Inventory Value</div>
                 <div className="fs-3 fw-bold text-white">
                     {new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        maximumFractionDigits: 0, // Set to 2 if you want paisa
-      }).format(totalValue)}
+                        style: 'currency',
+                        currency: 'INR',
+                        maximumFractionDigits: 0,
+                    }).format(totalValue)}
                 </div>
               </Card>
             </Col>
             <Col md={4}>
-              <Card className="inventory-card p-3">
+              <Card className="inventory-card p-3 shadow-sm">
                 <div className="text-secondary small mb-2">Low Stock Items</div>
                 <div className={`fs-3 fw-bold ${lowStockCount > 0 ? 'text-warning' : 'text-white'}`}>
                     {lowStockCount}
@@ -174,7 +168,7 @@ const categoryColors = {
             </Col>
           </Row>
 
-          <Card className="inventory-card border-0">
+          <Card className="inventory-card border-0 shadow-sm">
             <div className="p-4 d-flex justify-content-between text-white">
               <h5 className="mb-0">Product Inventory</h5>
               <span className="text-secondary small">{filteredProducts.length} items found</span>
@@ -183,8 +177,8 @@ const categoryColors = {
               <thead>
                 <tr>
                   <th>Product Name</th>
+                  <th>Warehouse</th> {/* Updated Column */}
                   <th>Vendor</th>
-                  <th>SKU</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock Status</th>
@@ -193,17 +187,21 @@ const categoryColors = {
               </thead>
               <tbody>
                 {filteredProducts.map((item) => (
-                  <tr 
-                    key={item._id} 
-                    className={`align-middle custom-table-row ${item.status === 'LOW STOCK' ? 'low-stock-row' : ''}`}
-                  >
+                  <tr key={item._id} className="align-middle custom-table-row">
                     <td className="fw-bold text-white">{item.name}</td>
+                    {/* Accessing populated object property */}
+                    <td className="text-info">
+                      <div className="d-flex align-items-center gap-1">
+                        <MapPin size={14} /> {item.warehouse?.name || 'Unassigned'}
+                      </div>
+                    </td>
                     <td className="text-secondary">{item.vendor}</td>
-                    <td className="text-secondary">{item.sku}</td>
-                    <td><span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>
-    {item.cat}
-  </span></td>
-                    <td className="text-white fw-medium">{item.price}</td>
+                    <td>
+                      <span className={`badge bg-opacity-10 ${categoryColors[item.cat] || 'bg-secondary text-secondary'}`}>
+                        {item.cat}
+                      </span>
+                    </td>
+                    <td className="text-white fw-medium">₹{item.price}</td>
                     <td><div className={item.color}>● {item.status}</div></td>
                     <td className="text-end">
                       <Button variant="link" className="text-info p-0 me-3" onClick={() => { setEditProduct(item); setShowModal(true); }}>

@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
-
+const warehouseRoutes = require('./routes/warehouseRoutes');
 const app = express();
 
 // Middleware
@@ -19,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Use Modular Routes
 app.use('/api', productRoutes);
+app.use('/api/warehouses', warehouseRoutes);
 
 // Server Start
 const PORT = process.env.PORT || 5000;
